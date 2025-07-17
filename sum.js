@@ -1,5 +1,5 @@
 function sum(a, b) {
 //   console.log("App started");
-  return a + b+1;
+  return a + b;
 }
 module.exports = sum;
