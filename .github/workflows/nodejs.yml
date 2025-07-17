@@ -1,3 +1,27 @@
+# name: Node.js CI
+
+# on:
+#   push:
+#     branches: [ master ]
+#   pull_request:
+#     branches: [ master ]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+
+#       - name: Use Node.js
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: '16'
+
+#       - run: npm install
+#       - run: npm test
+
+
+
 name: Node.js CI
 
 on:
@@ -11,11 +35,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          # Ensure safe.directory is set for the repository, which actions/checkout@v2 does by default, but good to be aware.
+          set-safe-directory: true
 
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          # IMPORTANT: Update Node.js version to one compatible with Jest (e.g., 20.x)
+          # This resolves the 'EBADENGINE' warnings.
+          node-version: '20' # Changed from '16'
 
-      - run: npm install
-      - run: npm test
+      - name: Install dependencies
+        run: npm install
+
+      # --- Debugging and Fixing Permission Issue ---
+      - name: Check Jest executable permissions (for debugging)
+        # This step will show the permissions of the jest executable.
+        # Look for 'x' (execute) in the output (e.g., -rwxr-xr-x).
+        run: ls -l node_modules/.bin/jest || echo "Jest executable not found or path incorrect, skipping permission check."
+
+      - name: Make Jest executable (if needed)
+        # This step explicitly adds execute permissions to the jest binary.
+        # This is a common workaround if npm install doesn't set them correctly in some environments.
+        # It's safe to run even if permissions are already correct.
+        run: chmod +x node_modules/.bin/jest || echo "Failed to make Jest executable, it might not exist."
+
+      - name: Run tests
+        # Assuming your package.json 'test' script is now "npx jest"
+        # This will execute the test command.
+        run: npm test
